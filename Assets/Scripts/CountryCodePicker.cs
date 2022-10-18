@@ -7,9 +7,6 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Dropdown))]
 public class CountryCodePicker : MonoBehaviour
 {
-	[Header("Show dropdown result")]
-	public Text Text_DropdownValue;
-
 	[SerializeField] private TextAsset m_Json_Code;
 	[SerializeField] private TextAsset m_Json_Flag;
 	[SerializeField] private Texture2D m_Sprite_Flag;
@@ -26,12 +23,9 @@ public class CountryCodePicker : MonoBehaviour
 		Init();
 	}
 
-	private void OnDestroy()
+	void Start()
 	{
-		if (m_Dropdown != null)
-		{
-			m_Dropdown.onValueChanged.RemoveListener(OnSelectItem);
-		}
+		m_Dropdown.value = m_Dropdown.options.FindIndex(x => x.text == m_DefaultOption);
 	}
 
 	private void Init()
@@ -61,6 +55,7 @@ public class CountryCodePicker : MonoBehaviour
 		{
 			aCountryFlagInfo = aFlagInfo.data.Find(x => x.name == aCodeInfo.data[i].abbr);
 			if (aCountryFlagInfo == null) { continue; }
+
 			m_CountryInfoList.Add(new CountryInfoClass(){
 				Name = aCodeInfo.data[i].name,
 				Abbr = aCodeInfo.data[i].abbr,
@@ -75,22 +70,34 @@ public class CountryCodePicker : MonoBehaviour
 		m_Dropdown.ClearOptions();
 
 		if (m_CountryInfoList == null) { return; }
+
 		List<Dropdown.OptionData> aDropdownItemLsit = new List<Dropdown.OptionData>();
 		for (int i = 0; i < m_CountryInfoList.Count; i++)
 		{
 			aDropdownItemLsit.Add(new Dropdown.OptionData(m_CountryInfoList[i].Name, m_CountryInfoList[i].Flag));
 		}
 		m_Dropdown.AddOptions(aDropdownItemLsit);
-
-		int aDefaultOption = m_Dropdown.options.FindIndex(x => x.text == m_DefaultOption);
-		m_Dropdown.value = aDefaultOption;
 	}
 
 	private void OnSelectItem(int iValue)
 	{
-		if (Text_DropdownValue.text == null) { return; }
-		// Text_DropdownValue.text = "+" + m_CountryInfoList[iValue].Code.ToString();
-		// m_Dropdown
+		if (m_Dropdown.captionText != null)
+		{
+			m_Dropdown.captionText.text = "+" + m_CountryInfoList[iValue].Code.ToString();
+		}
+
+		if (m_Dropdown.captionImage != null)
+		{
+			m_Dropdown.captionImage.sprite = m_CountryInfoList[iValue].Flag;
+		}
+	}
+
+	private void OnDestroy()
+	{
+		if (m_Dropdown != null)
+		{
+			m_Dropdown.onValueChanged.RemoveListener(OnSelectItem);
+		}
 	}
 
 	public CountryInfoClass GetCountryInfo(string iCountryName)
